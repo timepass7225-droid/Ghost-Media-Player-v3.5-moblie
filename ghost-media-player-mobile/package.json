@@ -1,0 +1,25 @@
+{
+  "name": "ghost-media-player-mobile",
+  "productName": "Ghost Media Player Mobile",
+  "version": "3.5.0-mobile",
+  "description": "Ghost Media Player, phone edition (Android via Capacitor).",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "cap:add:android": "npx cap add android",
+    "cap:sync": "npm run build && npx cap sync android",
+    "cap:build:debug": "npm run cap:sync && cd android && ./gradlew assembleDebug",
+    "cap:build:release": "npm run cap:sync && cd android && ./gradlew assembleRelease",
+    "test": "node tests/make-fixtures.js /tmp/fx && python3 tests/test_mobile.py"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "esbuild": "^0.21.0"
+  }
+}

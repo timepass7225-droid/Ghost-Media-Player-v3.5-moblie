@@ -1,0 +1,214 @@
+/* ==========================================================================
+   Ghost Media Player — v3 additions
+   1. Scroll fix for DJ / Lyrics / Radio screens
+   2. DJ Pro rack, scratch buttons, pads, sequencer
+   3. 3D mode (Settings → 3D look)
+   4. Extra control styles and effects-panel additions
+   ========================================================================== */
+
+/* ---- 1. Scroll fix: a grid/flex child with min-height:auto grows with its content and the
+        inner scroll area never gets a fixed height, so the mouse wheel had nothing to scroll. */
+.app { grid-template-rows: minmax(0, 1fr); }
+.stage { min-height: 0; min-width: 0; overflow: hidden; }
+.dj-screen, .lyrics-screen, .radio-screen {
+  min-height: 0; max-height: 100%; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+}
+.dj-screen[hidden], .lyrics-screen[hidden], .radio-screen[hidden] { display: none !important; }
+
+/* ---- 2. Scratch + jog ---- */
+.dj-discwrap { touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.dj-discwrap:active { cursor: grabbing; }
+.dj-deck.is-scratching .dj-discwrap { box-shadow: 0 0 0 3px var(--accent), 0 0 46px var(--glow); }
+.dj-scrnote { font-size: 11px; color: var(--text-faint); line-height: 1.4; }
+.dj-btn.is-on { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+
+/* ---- Pro rack ---- */
+.dj-rack { margin-top: 18px; border: 1px solid var(--border-soft); border-radius: var(--radius-lg); background: var(--panel-glass); padding: 16px 16px 20px; }
+.dj-rack__head h3 { margin: 3px 0 14px; font-size: 18px; font-weight: 600; }
+.dj-rack__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; align-items: start; }
+.dj-rackbox { border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 12px 13px 14px; background: rgba(0,0,0,0.18); display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+body.is-light .dj-rackbox { background: rgba(0,0,0,0.04); }
+.dj-rackbox h4 { margin: 0; font-size: 11.5px; letter-spacing: 0.14em; font-weight: 700; color: var(--text-dim); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.dj-rackbox__sub { margin-top: 8px !important; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.dj-rackbox--pads, .dj-rackbox--seq { grid-column: span 2; }
+@media (max-width: 760px) { .dj-rackbox--pads, .dj-rackbox--seq { grid-column: auto; } }
+.dj-rack__hint { font-size: 10.5px; color: var(--text-faint); font-weight: 400; letter-spacing: 0; }
+.dj-rack__warn { margin: 0; font-size: 11px; color: var(--danger); line-height: 1.4; }
+.dj-chips2 { display: flex; flex-wrap: wrap; gap: 6px; }
+.dj-chip2 { font: inherit; font-size: 12px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel-glass); color: var(--text); cursor: pointer; transition: background .15s, transform .1s; }
+.dj-chip2:hover { background: var(--hover); }
+.dj-chip2:active { filter: brightness(.85); }
+.dj-chip2.is-on { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+
+.dj-maxbeat {
+  font: inherit; font-weight: 800; letter-spacing: 0.2em; font-size: 15px; padding: 14px 10px; border-radius: var(--radius-md);
+  border: 2px solid var(--accent); background: linear-gradient(180deg, var(--accent-soft), transparent); color: var(--text); cursor: pointer;
+  box-shadow: 0 0 0 0 var(--glow); transition: transform .08s, box-shadow .2s, background .2s;
+}
+.dj-maxbeat:active { filter: brightness(.88); }
+.dj-maxbeat.is-on { background: var(--accent); color: var(--accent-contrast); animation: djShake .16s linear infinite; box-shadow: 0 0 34px var(--glow); }
+@keyframes djShake { 0% { transform: translate(0,0); } 25% { transform: translate(1.5px,-1px); } 50% { transform: translate(-1.5px,1px); } 75% { transform: translate(1px,1.5px); } 100% { transform: translate(0,0); } }
+
+.dj-pads { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.dj-pad {
+  position: relative; aspect-ratio: 1.5 / 1; border-radius: var(--radius-md); border: 1px solid var(--border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, var(--panel-glass)), var(--panel-glass));
+  color: var(--text); font: inherit; cursor: pointer; display: grid; place-items: center; padding: 4px; user-select: none; touch-action: none;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08); transition: transform .06s, box-shadow .06s, background .1s;
+}
+.dj-pad b { font-size: 11.5px; letter-spacing: 0.08em; }
+.dj-pad i { position: absolute; right: 7px; bottom: 4px; font-size: 10px; font-style: normal; color: var(--text-faint); }
+.dj-pad.is-hit, .dj-pad:active { box-shadow: 0 1px 0 rgba(0,0,0,0.35), 0 0 22px var(--glow); background: var(--accent); color: var(--accent-contrast); }
+.dj-pad.is-hit i, .dj-pad:active i { color: inherit; }
+
+.dj-seq { display: flex; flex-direction: column; gap: 4px; overflow-x: auto; padding-bottom: 4px; }
+.dj-seqrow { display: flex; align-items: center; gap: 8px; min-width: 520px; }
+.dj-seqlabel { width: 46px; flex: none; font-size: 10.5px; letter-spacing: 0.1em; color: var(--text-dim); font-weight: 600; }
+.dj-seqcells { display: grid; grid-template-columns: repeat(16, 1fr); gap: 3px; flex: 1; }
+.dj-cell { height: 24px; border-radius: 4px; border: 1px solid var(--border-soft); background: var(--panel-glass); cursor: pointer; padding: 0; transition: background .08s; }
+.dj-cell.is-beat { border-color: var(--border); }
+.dj-cell.is-on { background: var(--accent); border-color: var(--accent); }
+.dj-cell.is-now { outline: 2px solid var(--text); outline-offset: 0; }
+
+/* ---- Effects panel additions (normal player) ---- */
+.fxpro { display: flex; flex-direction: column; gap: 10px; }
+.fxpro .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fxpro__big {
+  width: 100%; font: inherit; font-weight: 800; letter-spacing: 0.18em; padding: 13px; border-radius: var(--radius-md);
+  border: 2px solid var(--accent); background: var(--accent-soft); color: var(--text); cursor: pointer;
+}
+.fxpro__big.is-on { background: var(--accent); color: var(--accent-contrast); animation: djShake .16s linear infinite; }
+.fxpro__warn { font-size: 11.5px; color: var(--danger); margin: 0; line-height: 1.4; }
+
+/* ---- Shuffle button ---- */
+#shuffleBtn.is-active { color: var(--accent); }
+
+/* 3D look lives in css/look3d.css (v3). */
+
+/* ---- Settings: small helper rows ---- */
+.set-note { font-size: 11.5px; color: var(--text-faint); line-height: 1.45; margin: 2px 0 0; }
+
+/* ==========================================================================
+   5. New control styles + theme specifics
+   ========================================================================== */
+
+/* ---- Tactical (Frontline Ops, Iron Fist, Toxic Lab): chamfered armour keys ---- */
+body[data-ctl="tactical"] .controls {
+  border-radius: 0; border: 0; background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  box-shadow: inset 0 3px 0 var(--accent), inset 0 0 0 1px var(--border);
+  background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.045) 0 6px, transparent 6px 12px);
+}
+body[data-ctl="tactical"] .iconbtn, body[data-ctl="tactical"] .pillbtn {
+  border-radius: 0; border: 0; color: var(--text); background: color-mix(in srgb, var(--text) 9%, transparent);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  text-transform: uppercase; letter-spacing: .1em; font-weight: 700;
+}
+body[data-ctl="tactical"] .iconbtn:hover, body[data-ctl="tactical"] .pillbtn:hover { background: var(--accent); color: var(--accent-contrast); }
+body[data-ctl="tactical"] .iconbtn--play {
+  width: 70px; height: 48px; background: var(--accent); color: var(--accent-contrast);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  background-image: repeating-linear-gradient(-45deg, rgba(0,0,0,.18) 0 5px, transparent 5px 10px);
+}
+body[data-ctl="tactical"] .seek::before, body[data-ctl="tactical"] .seek__buffered, body[data-ctl="tactical"] .seek__fill,
+body[data-ctl="tactical"] .volume::before, body[data-ctl="tactical"] .volume__fill {
+  height: 9px; border-radius: 0; transform: skewX(-24deg);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 10px, transparent 10px 13px); mask: repeating-linear-gradient(90deg, #000 0 10px, transparent 10px 13px);
+}
+body[data-ctl="tactical"] .seek__fill, body[data-ctl="tactical"] .volume__fill { background: var(--accent); box-shadow: none; }
+body[data-ctl="tactical"] .seek__thumb { width: 18px; height: 18px; border-radius: 0; background: transparent; border: 2px solid var(--accent); box-shadow: none; transform: translateX(-50%); }
+body[data-ctl="tactical"] .seek__thumb::before, body[data-ctl="tactical"] .seek__thumb::after { content: ""; position: absolute; background: var(--accent); }
+body[data-ctl="tactical"] .seek__thumb::before { left: 50%; top: -7px; bottom: -7px; width: 2px; margin-left: -1px; }
+body[data-ctl="tactical"] .seek__thumb::after { top: 50%; left: -7px; right: -7px; height: 2px; margin-top: -1px; }
+body[data-ctl="tactical"] .controls__time { font-family: var(--font); letter-spacing: .14em; color: var(--accent); font-weight: 700; }
+body[data-theme="frontline"] .brand__name, body[data-theme="ironfist"] .brand__name, body[data-theme="toxic"] .brand__name,
+body[data-theme="frontline"] .navitem, body[data-theme="ironfist"] .navitem, body[data-theme="toxic"] .navitem,
+body[data-theme="frontline"] .settings-group h3, body[data-theme="ironfist"] .settings-group h3, body[data-theme="toxic"] .settings-group h3 { text-transform: uppercase; letter-spacing: .12em; }
+body[data-theme="frontline"] .sidebar, body[data-theme="ironfist"] .sidebar, body[data-theme="toxic"] .sidebar { border-right: 3px solid var(--accent); }
+body[data-theme="toxic"] .sidebar::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: repeating-linear-gradient(-45deg, var(--accent) 0 10px, #000 10px 20px); }
+
+/* ---- Glyph (Glyphwire, Blueprint): outlined brackets, text-mode sliders ---- */
+body[data-ctl="glyph"] .controls { border-radius: 0; background: color-mix(in srgb, var(--bg) 82%, transparent); border: 1px solid var(--text); box-shadow: none; }
+body[data-ctl="glyph"] .iconbtn, body[data-ctl="glyph"] .pillbtn {
+  border-radius: 0; background: transparent; color: var(--text); border: 1px solid color-mix(in srgb, var(--text) 60%, transparent);
+  text-transform: uppercase; letter-spacing: .1em;
+}
+body[data-ctl="glyph"] .iconbtn:hover, body[data-ctl="glyph"] .pillbtn:hover { background: var(--text); color: var(--bg); }
+body[data-ctl="glyph"] .iconbtn--play { width: 62px; height: 44px; border: 2px solid var(--text); }
+body[data-ctl="glyph"] .iconbtn--play:hover { background: var(--text); color: var(--bg); }
+body[data-ctl="glyph"] .seek::before, body[data-ctl="glyph"] .seek__buffered, body[data-ctl="glyph"] .seek__fill,
+body[data-ctl="glyph"] .volume::before, body[data-ctl="glyph"] .volume__fill {
+  height: 6px; border-radius: 0;
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px); mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px);
+}
+body[data-ctl="glyph"] .seek__fill, body[data-ctl="glyph"] .volume__fill { background: var(--text); box-shadow: none; }
+body[data-ctl="glyph"] .seek__thumb { width: 10px; height: 18px; border-radius: 0; background: var(--text); box-shadow: none; }
+body[data-ctl="glyph"] .controls__time { font-family: var(--font); letter-spacing: .1em; }
+
+/* Glyphwire page: transparent stages so the text canvas shows, scanlines, uppercase mono labels */
+.glyph-canvas { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+body.has-glyph .stage > *:not(.glyph-canvas) { position: relative; z-index: 1; }
+body.has-glyph .viewport, body.has-glyph .dj-screen, body.has-glyph .lyrics-screen, body.has-glyph .radio-screen { background: transparent !important; }
+body.has-glyph .stage::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 3px); mix-blend-mode: screen; }
+body.has-glyph .navitem, body.has-glyph .settings-group h3, body.has-glyph .brand__name { text-transform: uppercase; letter-spacing: .14em; }
+body.has-glyph .brand__name::after { content: "_"; animation: glyphBlink 1s steps(1) infinite; }
+@keyframes glyphBlink { 50% { opacity: 0; } }
+body.has-glyph .empty-state h1, body.has-glyph .audio-stage__name { text-transform: uppercase; letter-spacing: .2em; text-shadow: 2px 0 rgba(255,255,255,.35), -2px 0 rgba(255,255,255,.2); background: #000; padding: 4px 10px; }
+body.has-glyph .empty-state__ghost, body.has-glyph .audio-stage__art { filter: contrast(2) grayscale(1); }
+body.has-glyph .sidebar, body.has-glyph .controls { background-color: rgba(0,0,0,0.78); }
+
+/* ---- Neon Grid (Vaporgrid) ---- */
+body[data-ctl="grid"] .controls { border-radius: 999px; background: color-mix(in srgb, var(--bg-elevated) 70%, transparent); border: 1px solid var(--accent); box-shadow: 0 0 22px var(--glow), inset 0 0 18px rgba(0,229,255,.12); }
+body[data-ctl="grid"] .iconbtn, body[data-ctl="grid"] .pillbtn { border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent); background: transparent; color: var(--text); box-shadow: 0 0 10px var(--glow); }
+body[data-ctl="grid"] .iconbtn:hover, body[data-ctl="grid"] .pillbtn:hover { background: var(--accent); color: var(--accent-contrast); }
+body[data-ctl="grid"] .iconbtn--play { width: 58px; height: 58px; background: linear-gradient(180deg, #ffb347, var(--accent)); color: #1a0636; border: 0; box-shadow: 0 0 26px var(--glow); }
+body[data-ctl="grid"] .seek::before, body[data-ctl="grid"] .volume::before { height: 3px; background: rgba(0,229,255,.35); }
+body[data-ctl="grid"] .seek__fill, body[data-ctl="grid"] .volume__fill { height: 3px; background: linear-gradient(90deg, #00e5ff, var(--accent)); box-shadow: 0 0 12px var(--accent); }
+body[data-ctl="grid"] .seek__thumb { width: 14px; height: 14px; background: #fff; box-shadow: 0 0 14px var(--accent), 0 0 4px #00e5ff; }
+
+/* ---- Blueprint, Midas small touches ---- */
+body[data-theme="blueprint"] .settings-group, body[data-theme="blueprint"] .theme-card { border-style: dashed; }
+body[data-theme="midas"] .brand__name, body[data-theme="midas"] .settings-group h3 { letter-spacing: .12em; text-transform: uppercase; }
+body[data-theme="midas"] .iconbtn--play { background: linear-gradient(180deg, #ffe08a, #c6902a); color: #2a1c02; box-shadow: 0 0 22px rgba(242,193,78,.45), inset 0 1px 0 rgba(255,255,255,.7); }
+
+/* ---- Theme cards: self-contained miniature preview (inline SVG, never an external picture) ---- */
+.theme-card__preview { height: 74px; }
+.theme-card__preview svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.theme-card__preview .theme-card__aa { display: none; }
+
+/* ---- Open folder / stream / ISO ---- */
+.gs-btns { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; margin-top: 6px; }
+.gs-btns .btn { padding: 7px 4px; font-size: 12px; }
+.gs-modal { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(0,0,0,.6); padding: 18px; }
+.gs-card { width: min(560px, 100%); max-height: 86vh; overflow: auto; background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 30px 60px rgba(0,0,0,.6); }
+.gs-card h3 { margin: 0; font-size: 16px; }
+.gs-note { margin: 0; font-size: 12.5px; color: var(--text-dim); line-height: 1.45; }
+.gs-note--warn { color: var(--danger); }
+.gs-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--panel); color: var(--text); font: inherit; }
+.gs-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.gs-list { max-height: 40vh; overflow: auto; border: 1px solid var(--border-soft); border-radius: var(--radius-md); }
+.gs-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 12.5px; border-bottom: 1px solid var(--border-soft); cursor: pointer; }
+.gs-row__n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gs-row__s { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+
+/* Root-cause fix for "theme pictures missing in the desktop app": the preview only contained absolutely
+   positioned children, so inside the <button> flex column it collapsed to ~2px wide in the Electron engine.
+   Give it an explicit width and make the card stretch its children. */
+.theme-card { align-items: stretch; box-sizing: border-box; min-width: 0; }
+.theme-card__preview { display: block; width: 100%; min-width: 100%; align-self: stretch; box-sizing: border-box; flex: none; }
+.theme-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* ---- Live TV channel browser ---- */
+.gs-card--wide { width: min(760px, 100%); }
+.gs-urlrow { display: flex; gap: 8px; }
+.gs-urlrow .gs-input { flex: 1; min-width: 0; }
+.gs-tvbar { display: flex; gap: 8px; }
+.gs-tvbar .gs-input { flex: 1; min-width: 0; }
+.gs-select { flex: 0 0 210px !important; }
+.gs-list--tv { max-height: 52vh; }
+.gs-ch { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: 0; border-bottom: 1px solid var(--border-soft); background: transparent; color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.gs-ch:hover, .gs-ch:focus-visible { background: var(--hover); outline: none; }
+.gs-ch img, .gs-ch__ph { width: 38px; height: 28px; flex: none; object-fit: contain; border-radius: 4px; background: rgba(255,255,255,.06); }
+.gs-ch__n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.gs-ch__g { flex: none; font-size: 11px; color: var(--text-faint); }
+.gs-more { width: 100%; padding: 10px; border: 0; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }

@@ -1,0 +1,93 @@
+/* Ghost Media Player MOBILE edition — phone layout + lite rendering. Loaded last, so it overrides the desktop CSS.
+ * Everything is scoped to html.is-mobile / body.is-mobile; nothing here touches the desktop build. */
+html.is-mobile {
+  --tabh: 58px;
+  --tabarea: calc(var(--tabh) + env(safe-area-inset-bottom, 0px));
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+html.is-mobile, html.is-mobile body { height: 100%; overflow: hidden; touch-action: manipulation; }
+html.is-mobile body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+html.is-mobile input, html.is-mobile textarea, html.is-mobile select { -webkit-user-select: text; user-select: text; }
+
+/* ---- lite rendering: frosted glass (backdrop-filter) and big blurred shadows are what make low-end phones stutter ---- */
+html.is-mobile *, html.is-mobile *::before, html.is-mobile *::after {
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html.is-mobile .controls { background: var(--bg-elevated); box-shadow: 0 -4px 18px rgba(0,0,0,.35); }
+html.is-mobile .sidebar, html.is-mobile .modal__card, html.is-mobile .popmenu { box-shadow: none; }
+html.is-mobile .orb__core { animation: none; }
+
+/* ---- layout: the page is the area above the tab bar ---- */
+html.is-mobile .app { height: calc(100vh - var(--tabarea)); height: calc(100dvh - var(--tabarea)); grid-template-columns: 1fr; }
+html.is-mobile .stagebar__menu, html.is-mobile .orbdock, html.is-mobile .sidebar__nav, html.is-mobile .sidebar .brand { display: none !important; }
+html.is-mobile .stagebar { display: flex; padding-top: max(8px, env(safe-area-inset-top, 0px)); }
+html.is-mobile .stagebar__open span { display: none; }
+html.is-mobile .stagebar__open { min-width: 44px; min-height: 44px; justify-content: center; }
+html.is-mobile .stagebar__title { font-size: 15px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Library / Effects / Themes / Settings open as a full-width sheet above the tab bar */
+html.is-mobile .sidebar {
+  position: fixed; top: 0; left: 0; right: 0; bottom: var(--tabarea); width: 100%; max-width: none; z-index: 40;
+  transform: translateY(100%); visibility: hidden; border-right: 0;
+  padding-top: max(14px, env(safe-area-inset-top, 0px));
+  transition: transform .22s ease, visibility 0s linear .22s;
+  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+}
+html.is-mobile .sidebar.is-open { transform: none; visibility: visible; transition-delay: 0s; }
+html.is-mobile .sidebar .btn, html.is-mobile .sidebar .select, html.is-mobile .sidebar .lib-search { min-height: 44px; }
+html.is-mobile .media-list li, html.is-mobile .media-item { min-height: 52px; }
+
+/* ---- bottom tab bar ---- */
+.mtabs { display: none; }
+html.is-mobile .mtabs {
+  display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; height: var(--tabarea);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-elevated); border-top: 1px solid var(--border-soft);
+}
+.mtab {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  background: none; border: 0; color: var(--text-dim); font: inherit; font-size: 11px; letter-spacing: .02em; cursor: pointer; padding: 0;
+}
+.mtab svg { flex: none; }
+.mtab.is-on { color: var(--accent); }
+.mtab:active { background: var(--accent-soft); }
+
+/* "More" menu */
+.msheet { position: fixed; inset: 0; z-index: 70; }
+.msheet[hidden] { display: none; }
+.msheet__scrim { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+.msheet__panel {
+  position: absolute; right: 8px; bottom: calc(var(--tabarea) + 8px); min-width: 200px; padding: 6px;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+.msheet__item {
+  display: block; width: 100%; min-height: 48px; padding: 0 16px; text-align: left; background: none; border: 0; border-radius: 10px;
+  color: var(--text); font: inherit; font-size: 15px; cursor: pointer;
+}
+.msheet__item:active { background: var(--accent-soft); }
+
+/* ---- player controls: seek on top, big keys, hardware buttons handle volume ---- */
+html.is-mobile .controls { left: 0; right: 0; bottom: 0; border-radius: 18px 18px 0 0; padding: 8px 14px 10px; }
+html.is-mobile .controls__row { row-gap: 2px; }
+html.is-mobile .volume, html.is-mobile #miniBtn, html.is-mobile #fullscreenBtn.desktop-only { display: none !important; }
+html.is-mobile .controls__group--right .pillbtn { display: inline-flex; }
+html.is-mobile .iconbtn { min-width: 44px; min-height: 44px; }
+html.is-mobile .iconbtn--play { min-width: 60px; min-height: 60px; }
+html.is-mobile .pillbtn { min-height: 40px; padding: 0 14px; }
+html.is-mobile .seek { height: 36px; }
+html.is-mobile .seek__thumb { width: 18px; height: 18px; }
+html.is-mobile .controls__time { font-size: 12px; }
+html.is-mobile .audio-stage__art { width: min(56vw, 240px); height: min(56vw, 240px); }
+html.is-mobile .toast { bottom: calc(var(--tabarea) + 90px); }
+
+/* landscape phones: everything must still fit above the tab bar */
+@media (max-height: 460px) {
+  html.is-mobile { --tabh: 48px; }
+  html.is-mobile .mtab { flex-direction: row; gap: 6px; font-size: 12px; }
+  html.is-mobile .stagebar { min-height: 40px; padding-top: max(2px, env(safe-area-inset-top, 0px)); padding-bottom: 2px; }
+  html.is-mobile .audio-stage__art { width: 96px; height: 96px; }
+}
+@media (prefers-reduced-motion: reduce) { html.is-mobile .sidebar { transition: none; } }
+html.is-mobile .pillbtn { display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
